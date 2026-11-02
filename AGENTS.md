@@ -1,0 +1,41 @@
+# AGENTS.md
+
+Guía de trabajo para sesiones de OpenCode en este repositorio. Contenido en español: mantén ese idioma en los ficheros del paquete.
+
+## Qué es este repo
+
+No es una aplicación: es un **bundle de configuración** para OpenCode V2 (orquestador + 5 subagentes). No hay builds, tests, CI ni toolchain.
+
+- `agents/` — 6 ficheros `.md` con frontmatter (`description`, `mode`, `model`): `orchestrator` (`mode: primary`) + `code`, `debug`, `research`, `review`, `architect` (todos `mode: subagent`; `research`/`review`/`architect` deniegan `edit` en sus permisos).
+- `proyecto/.opencode/` — variante que se copia tal cual a la raíz de un repo de equipo: `opencode.json` + copia de los agentes.
+- `opencode-global.example.json` — plantilla para instalación en config global.
+- `install.sh` — instalación en `~/.config/opencode/`.
+
+## Sincronización obligatoria (lo más fácil de olvidar)
+
+Existen **dos copias** de cada agente y de la configuración; al editar uno hay que aplicar el cambio importándolo de su origen:
+
+- `agents/*.md` ↔ `proyecto/.opencode/agents/*.md` (idénticos hoy; verificar con `diff -rq agents proyecto/.opencode/agents`).
+- `opencode-global.example.json` ↔ `proyecto/.opencode/opencode.json` (idénticos hoy).
+
+Tras cualquier cambio, ejecuta esas comparaciones y aplica la edición en ambas copias antes de terminar. Además, los 5 subagentes repiten el ID de modelo `opencode/opencode/glm-5.3-flash-free` en su frontmatter (el orquestador NO lo lleva: hereda el modelo y `default_agent` de la config global): si cambia, actualízalo en los 5 ficheros y en ambos `opencode.json`.
+
+## Config y permisos
+
+- La config es **OpenCode V2**: `permissions` es una lista `{action, resource, effect}`. No uses claves deprecadas de V1.
+- `default_agent: orchestrator`; `edit` y `shell` están en `allow` (`edit` y `shell` heredan el cwd del proyecto invocado); `external_directory` y `webfetch` en `ask`.
+- La delegación a subagentes es semiautomática: `subagent` también está en `ask` (reglas completas en `agents/orchestrator.md`).
+- OpenCode recarga la config automáticamente al guardar; no hace falta reiniciar.
+
+## Probar install.sh sin tocar tu config real
+
+```sh
+OPENCODE_CONFIG_DIR=/tmp/test-opencode ./install.sh
+```
+
+Nunca lo ejecutes contra un `~/.config/opencode` de desarrollo sin querer: el instalador sobrescribe agentes (hace backup, pero igualmente). Su comportamiento de merge respeta `default_agent` y el modelo existentes del usuario, y solo añade reglas de permisos que falten (deduplicadas).
+
+## Reglas del paquete
+
+- Jamás incluir credenciales, rutas personales ni el `opencode.json` personal completo; compartir solo la plantilla o pasar por el merge del instalador.
+- Los comandos de uso e instalación documentados en `README.md` son la fuente de verdad; mantén el README y estos ficheros coherentes.

@@ -21,9 +21,9 @@ basado en la configuración global (V2) de OpenCode.
 | `orchestrator` | Agente principal (`primary`): clasifica la tarea y delega |
 | `code` | Programación: implementa, refactoriza, pruebas |
 | `debug` | Diagnóstico y corrección de errores |
-| `research` | Investigación y fuentes (solo lectura) |
-| `review` | Auditoría de código (solo lectura) |
-| `architect` | Diseño y planificación (solo lectura) |
+| `research` | Investigación y fuentes |
+| `review` | Auditoría de código |
+| `architect` | Diseño y planificación |
 
 ## Opción A — Proyecto de equipo (sin instalar nada)
 
@@ -63,5 +63,6 @@ El instalador:
 - No se comparte nunca tu `opencode.json` personal completo: borrarías la
   configuración del otro. Comparte la plantilla o usa el merge del instalador.
 - Revisa el contenido antes de publicar el bundle: nada de rutas personales
-  ni secretos. Las reglas aquí incluidas piden aprobación (`ask`) para
-  ediciones, shell y delegación de subagentes.
+  ni secretos. Las reglas incluidas dejan edición y shell en `allow` (sin
+  pedir aprobación, ejecutando en el cwd del proyecto invocado); solo
+  `subagent`, `webfetch` y directorios externos piden aprobación (`ask`).

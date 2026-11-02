@@ -4,8 +4,9 @@
 #
 # - Copia los agentes a ~/.config/opencode/agents/ (con copia previa si existían).
 # - Si no existe ~/.config/opencode/opencode.json, la crea desde la plantilla.
-# - Si existe, solo AÑADE las reglas de permisos que faltan y respeta tu
-#   modelo por defecto y tu default_agent (no pisa tu configuración personal).
+# - Si existe, AÑADE las reglas de permisos que falten y ACTUALIZA el efecto
+#   (allow/ask) de las que ya existen con otro valor; respeta tu modelo por
+#   defecto y tu default_agent (no pisa tu configuración personal).
 #
 # Para instalar en otra ruta (p. ej. para pruebas): OPENCODE_CONFIG_DIR=/alguna/ruta ./install.sh
 set -euo pipefail
@@ -55,8 +56,8 @@ rules = [
     {"action": "grep", "resource": "*", "effect": "allow"},
     {"action": "external_directory", "resource": "*", "effect": "ask"},
     {"action": "webfetch", "resource": "*", "effect": "ask"},
-    {"action": "edit", "resource": "*", "effect": "ask"},
-    {"action": "shell", "resource": "*", "effect": "ask"},
+    {"action": "edit", "resource": "*", "effect": "allow"},
+    {"action": "shell", "resource": "*", "effect": "allow"},
     {"action": "subagent", "resource": "*", "effect": "ask"},
 ]
 
@@ -92,14 +93,23 @@ if not isinstance(existing, list):
           "opencode-global.example.json como referencia.")
 else:
     canon = lambda r: json.dumps(r, sort_keys=True)
-    have = {canon(r) for r in existing if isinstance(r, dict)}
-    added = [r for r in rules if canon(r) not in have]
-    existing.extend(added)
-    if added:
+    idx = {(r.get("action"), r.get("resource")): i
+           for i, r in enumerate(existing) if isinstance(r, dict)}
+    added = upgraded = 0
+    for rule in rules:
+        key = (rule["action"], rule["resource"])
+        if key in idx:
+            if canon(existing[idx[key]]) != canon(rule):
+                existing[idx[key]] = rule
+                upgraded += 1
+        else:
+            existing.append(rule)
+            added += 1
+    if added or upgraded:
         any_change = True
-        print(f"{len(added)} regla(s) de permisos anadida(s); total: {len(existing)}.")
+        print(f"{added} regla(s) anadida(s) y {upgraded} actualizada(s); total: {len(existing)}.")
     else:
-        print("Tus permisos ya cubren las reglas del paquete: nada que anadir.")
+        print("Tus permisos ya coinciden con las reglas del paquete: nada que cambiar.")
 
 if any_change:
     dump(cfg)
