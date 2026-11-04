@@ -4,9 +4,9 @@
 #
 # - Copia los agentes a ~/.config/opencode/agents/ (con copia previa si existían).
 # - Si no existe ~/.config/opencode/opencode.json, la crea desde la plantilla.
-# - Si existe, AÑADE las reglas de permisos que falten y ACTUALIZA el efecto
-#   (allow/ask) de las que ya existen con otro valor; respeta tu modelo por
-#   defecto y tu default_agent (no pisa tu configuración personal).
+# - Si existe, AÑADE solo las reglas de permisos cuya acción no hayas
+#   personalizado (nunca modifica ni debilita tus reglas existentes);
+#   respeta tu modelo por defecto y tu default_agent.
 #
 # Para instalar en otra ruta (p. ej. para pruebas): OPENCODE_CONFIG_DIR=/alguna/ruta ./install.sh
 set -euo pipefail
@@ -51,13 +51,15 @@ src = os.environ["SRC_DIR"]
 path = os.path.join(dest, "opencode.json")
 
 rules = [
-    {"action": "read", "resource": "*", "effect": "allow"},
-    {"action": "glob", "resource": "*", "effect": "allow"},
-    {"action": "grep", "resource": "*", "effect": "allow"},
+    {"action": "edit", "resource": "*", "effect": "allow"},
+    {"action": "shell", "resource": "*", "effect": "ask"},
+    {"action": "shell", "resource": "git status *", "effect": "allow"},
+    {"action": "shell", "resource": "git diff *", "effect": "allow"},
+    {"action": "shell", "resource": "git log *", "effect": "allow"},
+    {"action": "shell", "resource": "git branch *", "effect": "allow"},
+    {"action": "shell", "resource": "ls *", "effect": "allow"},
     {"action": "external_directory", "resource": "*", "effect": "ask"},
     {"action": "webfetch", "resource": "*", "effect": "ask"},
-    {"action": "edit", "resource": "*", "effect": "allow"},
-    {"action": "shell", "resource": "*", "effect": "allow"},
     {"action": "subagent", "resource": "*", "effect": "ask"},
 ]
 
@@ -92,24 +94,22 @@ if not isinstance(existing, list):
           "No he tocado los permisos; revisalo a mano y sentite libre de usar "
           "opencode-global.example.json como referencia.")
 else:
-    canon = lambda r: json.dumps(r, sort_keys=True)
-    idx = {(r.get("action"), r.get("resource")): i
-           for i, r in enumerate(existing) if isinstance(r, dict)}
-    added = upgraded = 0
+    # Respeta cualquier acción que el usuario ya haya personalizado: si tiene
+    # al menos una regla para esa acción, no se añade ninguna regla del
+    # paquete de esa acción (nunca se sobrescribe ni se debilita lo existente).
+    user_actions = {r.get("action") for r in existing if isinstance(r, dict)}
+    added = respected = 0
     for rule in rules:
-        key = (rule["action"], rule["resource"])
-        if key in idx:
-            if canon(existing[idx[key]]) != canon(rule):
-                existing[idx[key]] = rule
-                upgraded += 1
-        else:
-            existing.append(rule)
-            added += 1
-    if added or upgraded:
+        if rule["action"] in user_actions:
+            respected += 1
+            continue
+        existing.append(rule)
+        added += 1
+    if added:
         any_change = True
-        print(f"{added} regla(s) anadida(s) y {upgraded} actualizada(s); total: {len(existing)}.")
+        print(f"{added} regla(s) anadida(s); {respected} regla(s) del paquete respetadas por tener acciones personalizadas; total: {len(existing)}.")
     else:
-        print("Tus permisos ya coinciden con las reglas del paquete: nada que cambiar.")
+        print("Tus permisos ya cubren las acciones del paquete (tienes reglas propias): nada que cambiar.")
 
 if any_change:
     dump(cfg)

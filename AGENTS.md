@@ -23,7 +23,7 @@ Tras cualquier cambio, ejecuta esas comparaciones y aplica la edición en ambas 
 ## Config y permisos
 
 - La config es **OpenCode V2**: `permissions` es una lista `{action, resource, effect}`. No uses claves deprecadas de V1.
-- `default_agent: orchestrator`; `edit` y `shell` están en `allow` (`edit` y `shell` heredan el cwd del proyecto invocado); `external_directory` y `webfetch` en `ask`.
+- `default_agent: orchestrator`; `edit` en `allow` y `shell` en `ask` con allowlist de solo lectura (`git status/diff/log/branch`, `ls`); ambos heredan el cwd del proyecto invocado; `external_directory`, `webfetch` y `subagent` en `ask`.
 - La delegación a subagentes es semiautomática: `subagent` también está en `ask` (reglas completas en `agents/orchestrator.md`).
 - OpenCode recarga la config automáticamente al guardar; no hace falta reiniciar.
 

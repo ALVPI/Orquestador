@@ -2,6 +2,7 @@
 description: Diagnostica y corrige errores — excepciones, comportamientos inesperados, fallos de ejecución y análisis de logs.
 mode: subagent
 model: opencode/opencode/glm-5.3-flash-free
+steps: 60
 permissions:
   - action: subagent
     resource: "*"

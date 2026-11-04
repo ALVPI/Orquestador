@@ -48,8 +48,9 @@ El instalador:
 
 1. Copia los agentes a `~/.config/opencode/agents/` (backup previo si sobrescribe).
 2. Si no tienes `opencode.json`, la crea desde la plantilla.
-3. Si ya la tienes: **respeta tu modelo y tu agente por defecto**, y solo añade
-   las reglas de permisos que falten (sin duplicar las que ya coinciden).
+3. Si ya la tienes: **respeta tu modelo, tu agente por defecto y tus permisos
+   existentes**. Solo añade las reglas cuya acción no hayas personalizado;
+   nunca debilita ni sobrescribe lo que ya tengas configurado.
 
 ## Requisitos para quien lo usa
 
@@ -63,6 +64,10 @@ El instalador:
 - No se comparte nunca tu `opencode.json` personal completo: borrarías la
   configuración del otro. Comparte la plantilla o usa el merge del instalador.
 - Revisa el contenido antes de publicar el bundle: nada de rutas personales
-  ni secretos. Las reglas incluidas dejan edición y shell en `allow` (sin
-  pedir aprobación, ejecutando en el cwd del proyecto invocado); solo
-  `subagent`, `webfetch` y directorios externos piden aprobación (`ask`).
+  ni secretos. Reglas del paquete: `edit` en `allow` (operando sobre el cwd
+  del proyecto invocado); `shell` en `ask`, con excepciones de solo lectura
+  (`git status`, `git diff`, `git log`, `git branch`, `ls`) para no
+  entorpecer el flujo; `subagent`, `webfetch` y `external_directory` en
+  `ask`. El paquete **no** añade reglas `read` en blanco, así que la
+  protección `.env` integrada de OpenCode sigue activa. En `shell`, la opción
+  "Allow always" guarda prefijos de comando por proyecto.

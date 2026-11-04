@@ -3,13 +3,15 @@
   "default_agent": "orchestrator",
   "model": "opencode/opencode/glm-5.3-flash-free",
   "permissions": [
-    { "action": "read", "resource": "*", "effect": "allow" },
-    { "action": "glob", "resource": "*", "effect": "allow" },
-    { "action": "grep", "resource": "*", "effect": "allow" },
+    { "action": "edit", "resource": "*", "effect": "allow" },
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "git status *", "effect": "allow" },
+    { "action": "shell", "resource": "git diff *", "effect": "allow" },
+    { "action": "shell", "resource": "git log *", "effect": "allow" },
+    { "action": "shell", "resource": "git branch *", "effect": "allow" },
+    { "action": "shell", "resource": "ls *", "effect": "allow" },
     { "action": "external_directory", "resource": "*", "effect": "ask" },
     { "action": "webfetch", "resource": "*", "effect": "ask" },
-    { "action": "edit", "resource": "*", "effect": "allow" },
-    { "action": "shell", "resource": "*", "effect": "allow" },
     { "action": "subagent", "resource": "*", "effect": "ask" }
   ]
 }
