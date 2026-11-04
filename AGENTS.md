@@ -6,7 +6,7 @@ Guía de trabajo para sesiones de OpenCode en este repositorio. Contenido en esp
 
 No es una aplicación: es un **bundle de configuración** para OpenCode V2 (orquestador + 5 subagentes). No hay builds, tests, CI ni toolchain.
 
-- `agents/` — 6 ficheros `.md` con frontmatter (`description`, `mode`, `model`): `orchestrator` (`mode: primary`) + `code`, `debug`, `research`, `review`, `architect` (todos `mode: subagent`; `research`/`review`/`architect` deniegan `edit` en sus permisos).
+- `agents/` — 6 ficheros `.md` con frontmatter (`description`, `mode`, `model`, `steps`, `permissions`): `orchestrator` (`mode: primary`, sin `model` ni `steps`: hereda el modelo de la config) + `code`, `debug`, `research`, `review`, `architect` (todos `mode: subagent` con `steps` 60 para `code`/`debug` y 30 para los otros tres; `research`/`review`/`architect` deniegan `edit` y `shell` salvo allowlist de solo lectura — `git status/diff/log/branch`, `ls` — para que no puedan escribir por la vía `shell`).
 - `proyecto/.opencode/` — variante que se copia tal cual a la raíz de un repo de equipo: `opencode.json` + copia de los agentes.
 - `opencode-global.example.json` — plantilla para instalación en config global.
 - `install.sh` — instalación en `~/.config/opencode/`.
@@ -17,8 +17,9 @@ Existen **dos copias** de cada agente y de la configuración; al editar uno hay 
 
 - `agents/*.md` ↔ `proyecto/.opencode/agents/*.md` (idénticos hoy; verificar con `diff -rq agents proyecto/.opencode/agents`).
 - `opencode-global.example.json` ↔ `proyecto/.opencode/opencode.json` (idénticos hoy).
+- `~/.config/opencode/agents/*.md` es una **tercera copia** (lo que realmente se ejecuta cuando abres OpenCode en cualquier sitio). Si editas ahí directamente o instalas con `install.sh`, arrastra ese cambio a `agents/` y a `proyecto/.opencode/agents/` antes de terminar: es exactamente así como quedaron fuera del repo las secciones de contexto de directorio, RTK y reintentos del orquestador.
 
-Tras cualquier cambio, ejecuta esas comparaciones y aplica la edición en ambas copias antes de terminar. Además, los 5 subagentes repiten el ID de modelo `opencode/opencode/glm-5.3-flash-free` en su frontmatter (el orquestador NO lo lleva: hereda el modelo y `default_agent` de la config global): si cambia, actualízalo en los 5 ficheros y en ambos `opencode.json`.
+Tras cualquier cambio, ejecuta esas comparaciones y aplica la edición en ambas copias antes de terminar. Además, los 5 subagentes repiten el ID de modelo `opencode/glm-5.3-flash-free` en su frontmatter (el orquestador NO lo lleva: hereda el modelo y `default_agent` de la config global): si cambia, actualízalo en los 5 ficheros y en ambos `opencode.json`.
 
 ## Config y permisos
 
@@ -33,7 +34,7 @@ Tras cualquier cambio, ejecuta esas comparaciones y aplica la edición en ambas 
 OPENCODE_CONFIG_DIR=/tmp/test-opencode ./install.sh
 ```
 
-Nunca lo ejecutes contra un `~/.config/opencode` de desarrollo sin querer: el instalador sobrescribe agentes (hace backup, pero igualmente). Su comportamiento de merge respeta `default_agent` y el modelo existentes del usuario, y solo añade reglas de permisos que falten (deduplicadas).
+Nunca lo ejecutes contra un `~/.config/opencode` de desarrollo sin querer: el instalador sobrescribe agentes (hace backup, pero igualmente). Su comportamiento de merge respeta `default_agent` y el modelo existentes del usuario, coloca el bloque de permisos del paquete **delante** de los suyos (gana la última regla que coincide: sus reglas siguen aplicándose y el `ask` del paquete no se pierde) y deduplica.
 
 ## Reglas del paquete
 

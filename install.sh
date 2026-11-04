@@ -4,9 +4,13 @@
 #
 # - Copia los agentes a ~/.config/opencode/agents/ (con copia previa si existían).
 # - Si no existe ~/.config/opencode/opencode.json, la crea desde la plantilla.
-# - Si existe, AÑADE solo las reglas de permisos cuya acción no hayas
-#   personalizado (nunca modifica ni debilita tus reglas existentes);
-#   respeta tu modelo por defecto y tu default_agent.
+# - Si existe, COLOCA el bloque de reglas del paquete ANTES de las tuyas y
+#   añade las que falten (deduplicadas). OpenCode aplica la última regla que
+#   coincide, así que tus reglas siguen prevaleciendo y, además, el paquete
+#   siempre aporta su postura `ask` (si solo añadiera las acciones que te
+#   faltaran, una regla tuya de esa acción dejaría `shell` o `subagent` en
+#   `allow` por la política base de OpenCode). Nunca borra ni debilita una
+#   regla tuya; respeta tu modelo por defecto y tu default_agent.
 #
 # Para instalar en otra ruta (p. ej. para pruebas): OPENCODE_CONFIG_DIR=/alguna/ruta ./install.sh
 set -euo pipefail
@@ -94,22 +98,30 @@ if not isinstance(existing, list):
           "No he tocado los permisos; revisalo a mano y sentite libre de usar "
           "opencode-global.example.json como referencia.")
 else:
-    # Respeta cualquier acción que el usuario ya haya personalizado: si tiene
-    # al menos una regla para esa acción, no se añade ninguna regla del
-    # paquete de esa acción (nunca se sobrescribe ni se debilita lo existente).
-    user_actions = {r.get("action") for r in existing if isinstance(r, dict)}
-    added = respected = 0
-    for rule in rules:
-        if rule["action"] in user_actions:
-            respected += 1
-            continue
-        existing.append(rule)
-        added += 1
-    if added:
+    # El bloque del paquete se coloca ANTES de las reglas del usuario.
+    # OpenCode resuelve con la ÚLTIMA regla que coincide, así que las reglas
+    # del usuario (que van detrás) siguen ganando: no se borra ni se debilita
+    # nada de lo suyo. Y como el bloque del paquete entra completo, su
+    # postura `ask` (shell, subagent, webfetch, external_directory) no se
+    # pierde aunque el usuario ya tenga reglas de esa acción: añadir solo las
+    # acciones ausentes dejaba `shell`/`subagent` en `allow` por la política
+    # base de OpenCode (fail-open).
+    canon = lambda r: json.dumps(r, sort_keys=True, ensure_ascii=False)
+    pkg_keys = {canon(r) for r in rules}
+    before = {canon(r) for r in existing if isinstance(r, dict)}
+    added = sum(1 for r in rules if canon(r) not in before)
+    kept = [r for r in existing if canon(r) not in pkg_keys]
+    merged = rules + kept
+    if merged != existing:
+        cfg["permissions"] = merged
         any_change = True
-        print(f"{added} regla(s) anadida(s); {respected} regla(s) del paquete respetadas por tener acciones personalizadas; total: {len(existing)}.")
+        kept_n = sum(1 for r in kept if isinstance(r, dict))
+        if added:
+            print(f"{added} regla(s) del paquete anadida(s); tus {kept_n} regla(s) se conservan detras y siguen prevaleciendo; total: {len(merged)}.")
+        else:
+            print(f"Bloque del paquete recolocado delante de tus {kept_n} regla(s) para que sigan ganando ellas; total: {len(merged)}.")
     else:
-        print("Tus permisos ya cubren las acciones del paquete (tienes reglas propias): nada que cambiar.")
+        print("Tus permisos ya llevan el bloque del paquete en el orden correcto: nada que cambiar.")
 
 if any_change:
     dump(cfg)
