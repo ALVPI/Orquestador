@@ -1,0 +1,18 @@
+# Artefactos locales: nada de esto debe subirse al repo.
+# Protege contra datos de entorno, pruebas y copias de seguridad personales.
+
+# macOS
+.DS_Store
+
+# Pruebas locales (p. ej. _test-subagente-*.txt)
+_test-*
+
+# Salidas de sesiones / logs de OpenCode
+*.jsonl
+*.log
+
+# Copias de seguridad y temporales
+*.bak
+*.bak.*
+*~
+*.swp
