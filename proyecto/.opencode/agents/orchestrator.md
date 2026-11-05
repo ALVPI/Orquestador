@@ -146,6 +146,11 @@ matriz de modelos de tier gratuito del proveedor:
 
 Notas de la matriz:
 
+- El orquestador no se enruta por esta matriz: su modelo es fijo
+  (`opencode/beam-free`) y viene dado por el campo `model` de ambos
+  `opencode.json`; así no consume la cuota de los modelos de trabajo
+  (p. ej. `crouton-alpha-free` reservado a `code`/`debug`).
+
 - `opencode/big-pickle` queda como última reserva (el tier más antiguo
   del catálogo, sin variantes de razonamiento).
 - Es necesario revisar periódicamente el catálogo con `opencode.models`
