@@ -72,7 +72,9 @@ El instalador:
 
 - OpenCode V2 (la config usa `permissions`, no las claves deprecadas de V1).
 - Autenticar su propia cuenta de OpenCode una vez, para que el proveedor
-  `opencode` (modelos gratuitos, p. ej. `glm-5.3-flash-free`) esté disponible.
+  `opencode` (modelos de tier gratuito; el agente orquestador los enruta
+  dinámicamente por tarea, ve MODEL ROUTER en `agents/orchestrator.md`,
+  con fallback a `beam-free` si la cuota gratuita se agota) esté disponible.
   El paquete **no incluye credenciales** y no debe incluirlas nunca.
 
 ## Seguridad

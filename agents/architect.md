@@ -1,7 +1,6 @@
 ---
 description: Diseña arquitectura y estructura de proyectos — patrones de diseño, APIs, decisiones tecnológicas y planificación de sistemas complejos. No modifica archivos.
 mode: subagent
-model: opencode/glm-5.3-flash-free
 steps: 30
 permissions:
   - action: subagent

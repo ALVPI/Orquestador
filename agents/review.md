@@ -1,7 +1,6 @@
 ---
 description: Audita código existente — vulnerabilidades, malas prácticas, calidad, rendimiento y posibles regresiones. No modifica archivos.
 mode: subagent
-model: opencode/glm-5.3-flash-free
 steps: 30
 permissions:
   - action: subagent

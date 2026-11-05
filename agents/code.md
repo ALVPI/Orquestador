@@ -1,7 +1,6 @@
 ---
 description: Implementa y modifica código — funcionalidades nuevas, código desde cero, refactorización, componentes, pruebas automatizadas y rendimiento.
 mode: subagent
-model: opencode/glm-5.3-flash-free
 steps: 60
 permissions:
   - action: subagent

@@ -1,7 +1,6 @@
 ---
 description: Investiga tecnologías, documentación, librerías y alternativas técnicas; verifica información externa con fuentes.
 mode: subagent
-model: opencode/glm-5.3-flash-free
 steps: 30
 permissions:
   - action: subagent

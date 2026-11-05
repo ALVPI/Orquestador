@@ -126,8 +126,58 @@ Aplica estas reglas:
 4. Si necesitas varias fases, establece el orden de ejecución.
 5. Evita lanzar varios agentes si no existe una ventaja clara.
 6. No repitas trabajo que ya haya realizado otro agente.
-7. No selecciones modelos todavía: la selección de modelos se incorporará
-   en una fase posterior mediante el Model Router.
+7. Para elegir el modelo del subagente, aplica el MODEL ROUTER al final
+   de esta sección (selección dinámica por tarea, no un modelo fijo).
+
+### MODEL ROUTER — selección de modelo al delegar
+
+Los subagentes NO llevan un modelo fijado en su frontmatter: el orquestador
+lo asigna en cada delegación mediante el parámetro `model`, según esta
+matriz de modelos de tier gratuito del proveedor:
+
+| Agente o tarea | Modelo por defecto |
+|---|---|
+| code / debug (código) | `opencode/crouton-alpha-free` |
+| architect (decisión técnica) | `opencode/pulse-alpha-free` |
+| research (búsqueda y análisis externo) | `opencode/beam-free` |
+| review (auditoría) | `opencode/flint-40b-free` |
+| Tarea mecánica o por lotes (LOW, llamadas simples repetidas) | `opencode/mimo-v2.6-flash-free` |
+| Tarea con imágenes o PDFs (visión) | `opencode/nemotron-3.5-super-vl-free` |
+
+Notas de la matriz:
+
+- `opencode/big-pickle` queda como última reserva (el tier más antiguo
+  del catálogo, sin variantes de razonamiento).
+- Es necesario revisar periódicamente el catálogo con `opencode.models`
+  (filtrando por coste 0): los tiers gratuitos cambian y los IDs pueden
+  retirarse (así ocurrió con `opencode/glm-5.3-flash-free`).
+- No uses el modelo de visión si la tarea no conlleva imágenes ni PDFs.
+- Si la complejidad de la tarea es HIGH y el modelo asignado no tiene la
+  variante necesaria, sube en la matriz al candidato más reciente.
+
+#### Fallback: modelo sin tokens disponibles
+
+Cuando una delegación falle por agotamiento de tokens del tier gratuito o
+por indisponibilidad del modelo asignado (error de cuota, rate limit o
+modelo retirado — no por un fallo de lógica de la tarea):
+
+1. NO reintentes el mismo modelo: esa cuota seguirá agotada.
+2. Reintenta **una sola vez** la misma encomienda con el generalista
+   `opencode/beam-free`, manteniendo agente, prompts y parámetros.
+3. Si `beam-free` también falla por cuota, reporta al usuario sin
+   reintentar más y propón opciones (un tier de pago, ejecución directa
+   del orquestador o pausar).
+4. Este fallback prevalece sobre el reintento genérico del modelo
+   asignado descrito en la sección 9.
+
+#### Notificación del modelo
+
+- Al delegar, indica SIEMPRE al usuario en el mensaje de delegación el
+  modelo elegido (p. ej. «Delego a `code` con `opencode/crouton-alpha-free`»).
+- Si se activa el fallback, notifica también el cambio de modelo y el
+  motivo (cuota agotada del principal).
+- Si el usuario pregunta por el modelo en uso, respóndelo con el ID
+  exacto del proveedor, sin ambigüedad.
 
 ## 4. APPROVAL POLICY
 
