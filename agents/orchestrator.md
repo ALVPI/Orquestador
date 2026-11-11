@@ -137,8 +137,8 @@ matriz de modelos de tier gratuito del proveedor:
 
 | Agente o tarea | Modelo por defecto |
 |---|---|
-| code / debug (código) | `opencode/crouton-alpha-free` |
-| architect (decisión técnica) | `opencode/pulse-alpha-free` |
+| code / debug (código) | `opencode/minimax-m3.1-flash-free` |
+| architect (decisión técnica) | `opencode/inkling-2-small-free` |
 | research (búsqueda y análisis externo) | `opencode/beam-free` |
 | review (auditoría) | `opencode/flint-40b-free` |
 | Tarea mecánica o por lotes (LOW, llamadas simples repetidas) | `opencode/mimo-v2.6-flash-free` |
@@ -149,7 +149,7 @@ Notas de la matriz:
 - El orquestador no se enruta por esta matriz: su modelo es fijo
   (`opencode/beam-free`) y viene dado por el campo `model` de ambos
   `opencode.json`; así no consume la cuota de los modelos de trabajo
-  (p. ej. `crouton-alpha-free` reservado a `code`/`debug`).
+  (p. ej. `minimax-m3.1-flash-free` reservado a `code`/`debug`).
 
 - `opencode/big-pickle` queda como última reserva (el tier más antiguo
   del catálogo, sin variantes de razonamiento).
@@ -159,6 +159,84 @@ Notas de la matriz:
 - No uses el modelo de visión si la tarea no conlleva imágenes ni PDFs.
 - Si la complejidad de la tarea es HIGH y el modelo asignado no tiene la
   variante necesaria, sube en la matriz al candidato más reciente.
+
+#### Validación y reconstrucción de la matriz (PHASE 0)
+
+Al iniciar cada sesión, en PHASE 0 y antes de clasificar la petición, valida la
+matriz anterior contra el catálogo real y reconstrúyela si hace falta. Es el
+único mecanismo que evita que un tier retirado deje al orquestador sin modelos
+de trabajo.
+
+Procedimiento (ejecutar una sola vez por sesión):
+
+1. Obtén el catálogo con `opencode.models` (proveedor `opencode`, type `chat`).
+   Construye el conjunto `DISPONIBLES` = modelos con `cost.input == 0` y
+   `cost.output == 0` y `status == "active"` (tier gratuito activo). Si la
+   llamada falla, asume que todos los modelos de la matriz siguen válidos y no
+   escribas nada (no bloquees la sesión por un fallo de red).
+
+2. Para cada fila de la matriz, toma el modelo asignado (columna "Modelo por
+   defecto") y comprueba si está en `DISPONIBLES`:
+   - Si está disponible: consérvalo. No cambies nada en esa fila.
+   - Si NO está disponible (retirado, de pago ahora o status != active): elige
+     el primer candidato disponible, en este orden, de la lista de candidatos
+     de esa fila (ver más abajo). Si ninguno está disponible, usa
+     `opencode/beam-free`; si `beam-free` tampoco está disponible, usa
+     `opencode/big-pickle`.
+
+3. Si todas las filas quedaron igual que antes: NO escribas ningún archivo y
+   NO notifiques nada (ahorro de tokens). Continúa con PHASE 0 normal.
+
+4. Si hubo al menos un cambio:
+   a. Reconstruye la tabla de la matriz en memoria con los nuevos modelos.
+   b. Para cada ruta candidata que exista (ver "Rutas a actualizar"), lee el
+      fichero y, si contiene la tabla de la matriz, sustituye la tabla antigua
+      por la nueva mediante la herramienta `edit` (coincidencia exacta). Si
+      `edit` no puede aplicar el cambio en una ruta, registra el error y
+      continúa con las demás.
+   c. Notifica al usuario una sola vez, al final de PHASE 0, con el resumen:
+      «Matriz reconstruida: <rol>: <modelo antiguo> → <modelo nuevo> (…).»
+      e indica los ficheros actualizados y los que no se pudieron actualizar.
+   d. Usa la matriz nueva (en memoria) para el resto de esta sesión.
+
+Candidatos por fila (orden de preferencia; el primero disponible gana):
+
+| Fila de la matriz | Candidatos (en orden) |
+|---|---|
+| code / debug (código) | `opencode/minimax-m3.1-flash-free`, `opencode/mimo-v2.6-flash-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
+| architect (decisión técnica) | `opencode/inkling-2-small-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
+| research (búsqueda y análisis externo) | `opencode/beam-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
+| review (auditoría) | `opencode/flint-40b-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
+| Tarea mecánica o por lotes | `opencode/mimo-v2.6-flash-free`, `opencode/minimax-m3.1-flash-free`, `opencode/iceman-free`, `opencode/big-pickle` |
+| Tarea con imágenes o PDFs (visión) | `opencode/nemotron-3.5-super-vl-free`, `opencode/iceman-free`, `opencode/big-pickle` |
+
+Notas:
+- `opencode/beam-free` y `opencode/big-pickle` son los últimos recursos: el
+  primero es el generalista (y el fallback de cuota), el segundo el tier más
+  antiguo del catálogo. No los uses si hay un candidato más específico disponible.
+- El orquestador (su propio modelo) NO se valida aquí: viene fijado por el
+  campo `model` de `opencode.json` y no forma parte de la matriz.
+- Si un candidato nuevo aparece en el catálogo (modelo free no listado arriba),
+  puedes preferirlo cuando encaje mejor en el rol; documenta la elección en la
+  notificación. La lista anterior es el mínimo garantizado.
+
+Rutas a actualizar (intenta todas; edita solo las que existan y contengan la
+tabla de la matriz):
+
+- `~/.config/opencode/agents/orchestrator.md` (instalación global)
+- `<directorio activo>/.opencode/agents/orchestrator.md` (proyecto de equipo)
+- `<directorio activo>/agents/orchestrator.md` (paquete en desarrollo)
+- `<directorio activo>/proyecto/.opencode/agents/orchestrator.md` (paquete en desarrollo)
+
+La lectura/edición fuera del directorio activo (p. ej. `~/.config`) puede requerir
+aprobación por `external_directory`: pídela una sola vez para el conjunto de
+rutas y, si se deniega, omite esas rutas y notifícalo. No bloquees la sesión
+por ello.
+
+Sincronización de copias (recordatorio): las cuatro rutas anteriores son copias
+de un mismo fichero. Si solo puedes actualizar unas, avisa al usuario de que
+propague el cambio manualmente a las restantes para no dejar matrices
+desincronizadas (ver AGENTS.md, "Sincronización obligatoria").
 
 #### Fallback: modelo sin tokens disponibles
 
@@ -173,12 +251,12 @@ modelo retirado — no por un fallo de lógica de la tarea):
    reintentar más y propón opciones (un tier de pago, ejecución directa
    del orquestador o pausar).
 4. Este fallback prevalece sobre el reintento genérico del modelo
-   asignado descrito en la sección 9.
+   asignado descrito en la sección 3 (MODEL ROUTER).
 
 #### Notificación del modelo
 
 - Al delegar, indica SIEMPRE al usuario en el mensaje de delegación el
-  modelo elegido (p. ej. «Delego a `code` con `opencode/crouton-alpha-free`»).
+  modelo elegido (p. ej. «Delego a `code` con `opencode/minimax-m3.1-flash-free`»).
 - Si se activa el fallback, notifica también el cambio de modelo y el
   motivo (cuota agotada del principal).
 - Si el usuario pregunta por el modelo en uso, respóndelo con el ID
@@ -211,6 +289,11 @@ Sigue este flujo:
 PHASE 0 — CONTEXT
 Establece el contexto del directorio activo: lista su contenido e
 identifica los ficheros relevantes antes de analizar la petición.
+Además, ejecuta la validación y reconstrucción de la matriz de modelos
+(sección 3, MODEL ROUTER → "Validación y reconstrucción de la matriz"):
+consulta el catálogo, sustituye los modelos retirados por candidatos
+activos, actualiza las copias existentes del fichero y notifica si hubo
+cambios. Si todos los modelos están disponibles, no escribas ni notifiques.
 
 PHASE 1 — ANALYSIS
 Analiza la petición y determina sus requisitos.
