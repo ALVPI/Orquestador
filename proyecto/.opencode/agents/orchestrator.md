@@ -188,16 +188,29 @@ Procedimiento (ejecutar una sola vez por sesión):
    NO notifiques nada (ahorro de tokens). Continúa con PHASE 0 normal.
 
 4. Si hubo al menos un cambio:
-   a. Reconstruye la tabla de la matriz en memoria con los nuevos modelos.
-   b. Para cada ruta candidata que exista (ver "Rutas a actualizar"), lee el
-      fichero y, si contiene la tabla de la matriz, sustituye la tabla antigua
-      por la nueva mediante la herramienta `edit` (coincidencia exacta). Si
-      `edit` no puede aplicar el cambio en una ruta, registra el error y
-      continúa con las demás.
-   c. Notifica al usuario una sola vez, al final de PHASE 0, con el resumen:
-      «Matriz reconstruida: <rol>: <modelo antiguo> → <modelo nuevo> (…).»
-      e indica los ficheros actualizados y los que no se pudieron actualizar.
-   d. Usa la matriz nueva (en memoria) para el resto de esta sesión.
+   a. Construye el aviso con la lista de cambios detectados:
+      «Matriz a actualizar: <rol>: <modelo antiguo> → <modelo nuevo> (…).»
+      Incluye el motivo (modelo retirado / de pago / inactivo) y la lista de
+      rutas candidatas que se actualizarían.
+   b. Presenta el aviso al usuario y solicita autorización explícita antes de
+      persistir. No escribas ningún archivo hasta recibir aprobación.
+   c. Si el usuario autoriza:
+      - Reconstruye la tabla de la matriz en memoria con los nuevos modelos.
+      - Para cada ruta candidata que exista (ver "Rutas a actualizar"), lee el
+        fichero y, si contiene la tabla de la matriz, sustituye la tabla
+        antigua por la nueva mediante la herramienta `edit` (coincidencia
+        exacta). Si `edit` no puede aplicar el cambio en una ruta, registra
+        el error y continúa con las demás.
+      - Notifica al usuario una sola vez, al final de PHASE 0, con el resumen:
+        «Matriz reconstruida: <rol>: <modelo antiguo> → <modelo nuevo> (…).»
+        e indica los ficheros actualizados y los que no se pudieron actualizar.
+      - Usa la matriz nueva (en memoria) para el resto de esta sesión.
+   d. Si el usuario NO autoriza (o no responde):
+      - Usa la matriz nueva (con los sustitutos) solo en memoria para que la
+        sesión funcione, pero NO persistas cambios en ningún fichero.
+      - Notifica que la matriz NO se guardó y que los sustitutos se aplican
+        únicamente a esta sesión; recuérdale que puede volver a ejecutar la
+        reconstrucción más tarde.
 
 Candidatos por fila (orden de preferencia; el primero disponible gana):
 
@@ -255,12 +268,20 @@ modelo retirado — no por un fallo de lógica de la tarea):
 
 #### Notificación del modelo
 
-- Al delegar, indica SIEMPRE al usuario en el mensaje de delegación el
-  modelo elegido (p. ej. «Delego a `code` con `opencode/minimax-m3.1-flash-free`»).
+- Al delegar, muestra SIEMPRE un aviso explícito y visible (no solo
+  embebido en el texto de la delegación) indicando el agente y el modelo
+  que se va a usar para esa tarea, p. ej. «Aviso: esta tarea la ejecutará
+  `code` con el modelo `opencode/minimax-m3.1-flash-free`.» Hazlo ANTES
+  de pedir la aprobación, para que el usuario sepa exactamente qué modelo
+  se va a usar.
+- Al asignar un modelo a una tarea (incluso si no hay delegación a
+  subagente), comunica el modelo elegido con un mensaje claro.
 - Si se activa el fallback, notifica también el cambio de modelo y el
   motivo (cuota agotada del principal).
 - Si el usuario pregunta por el modelo en uso, respóndelo con el ID
   exacto del proveedor, sin ambigüedad.
+- En el reporte final (PHASE 7) incluye el modelo utilizado en cada
+  delegación realizada.
 
 ## 4. APPROVAL POLICY
 
@@ -305,7 +326,10 @@ PHASE 3 — ROUTING
 Decide si debes trabajar directamente o delegar.
 
 PHASE 4 — APPROVAL
-Si vas a delegar, solicita autorización.
+Si vas a delegar, solicita autorización. En la solicitud incluye SIEMPRE el
+agente seleccionado y el modelo con el que se ejecutará (p. ej.
+«Delego a `code` con `opencode/minimax-m3.1-flash-free`»), para que el
+usuario sepa exactamente qué modelo se va a usar antes de aprobar.
 
 PHASE 5 — EXECUTION
 Ejecuta la tarea directamente o utiliza el subagente autorizado.
@@ -315,8 +339,9 @@ Comprueba el resultado, identifica posibles errores y verifica
 que se hayan cumplido los requisitos.
 
 PHASE 7 — REPORT
-Presenta un resumen del trabajo realizado, los archivos afectados
-y cualquier limitación o problema pendiente.
+Presenta un resumen del trabajo realizado, los archivos afectados,
+los modelos utilizados en cada delegación y cualquier limitación o
+problema pendiente.
 
 ## 6. RESPONSE FORMAT
 
