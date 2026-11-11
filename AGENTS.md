@@ -36,6 +36,12 @@ OPENCODE_CONFIG_DIR=/tmp/test-opencode ./install.sh
 
 Nunca lo ejecutes contra un `~/.config/opencode` de desarrollo sin querer: el instalador sobrescribe agentes (hace backup, pero igualmente). Su comportamiento de merge respeta `default_agent` y el modelo existentes del usuario, coloca el bloque de permisos del paquete **delante** de los suyos (gana la última regla que coincide: sus reglas siguen aplicándose y el `ask` del paquete no se pierde) y deduplica.
 
+## Testing
+
+- Las pruebas se realizan en `/tmp/` (y su equivalente canónico `/private/tmp/` en macOS). No escribas ficheros de prueba dentro del repo ni en rutas del usuario.
+- El acceso a `/tmp/*` y `/private/tmp/*` está permitido sin verificación (`external_directory` → `allow`), para que `mkdir`, `touch`, `head`, `tail`, `npm` y otros comandos típicos de prueba no requieran aprobación cuando operen dentro de esas rutas.
+- Los comandos que accedan a otras rutas siguen sujetos a las reglas de permisos habituales.
+
 ## Reglas del paquete
 
 - Jamás incluir credenciales, rutas personales ni el `opencode.json` personal completo; compartir solo la plantilla o pasar por el merge del instalador.
