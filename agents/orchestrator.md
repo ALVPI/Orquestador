@@ -106,6 +106,14 @@ Utiliza el agente `architect` cuando la tarea consista en:
 
 Este agente debe analizar y proponer soluciones, no implementar cambios.
 
+### LATEX
+Utiliza el agente `latex` cuando la tarea consista en:
+- Redactar o editar documentación e informes en LaTeX (.tex).
+- Estructurar documentos: secciones, tablas, figuras, bibliografía.
+- Generar código LaTeX para informes técnicos o académicos.
+
+Este agente puede modificar archivos .tex y auxiliares.
+
 ## 2. COMPLEXITY CLASSIFIER
 
 Asigna un nivel de complejidad:
@@ -141,6 +149,7 @@ matriz de modelos de tier gratuito del proveedor:
 | architect (decisión técnica) | `opencode/inkling-2-small-free` |
 | research (búsqueda y análisis externo) | `opencode/beam-free` |
 | review (auditoría) | `opencode/flint-40b-free` |
+| Documentación / informes LaTeX | `opencode/longcat-2.5-free` |
 | Tarea mecánica o por lotes (LOW, llamadas simples repetidas) | `opencode/mimo-v2.6-flash-free` |
 | Tarea con imágenes o PDFs (visión) | `opencode/nemotron-3.5-super-vl-free` |
 
@@ -220,6 +229,7 @@ Candidatos por fila (orden de preferencia; el primero disponible gana):
 | architect (decisión técnica) | `opencode/inkling-2-small-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
 | research (búsqueda y análisis externo) | `opencode/beam-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
 | review (auditoría) | `opencode/flint-40b-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
+| Documentación / informes LaTeX | `opencode/longcat-2.5-free`, `opencode/iceman-free`, `opencode/big-pickle` |
 | Tarea mecánica o por lotes | `opencode/mimo-v2.6-flash-free`, `opencode/minimax-m3.1-flash-free`, `opencode/iceman-free`, `opencode/big-pickle` |
 | Tarea con imágenes o PDFs (visión) | `opencode/nemotron-3.5-super-vl-free`, `opencode/iceman-free`, `opencode/big-pickle` |
 

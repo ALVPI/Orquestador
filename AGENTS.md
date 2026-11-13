@@ -4,9 +4,9 @@ Guía de trabajo para sesiones de OpenCode en este repositorio. Contenido en esp
 
 ## Qué es este repo
 
-No es una aplicación: es un **bundle de configuración** para OpenCode V2 (orquestador + 5 subagentes). No hay builds, tests, CI ni toolchain.
+No es una aplicación: es un **bundle de configuración** para OpenCode V2 (orquestador + 6 subagentes). No hay builds, tests, CI ni toolchain.
 
-- `agents/` — 6 ficheros `.md` con frontmatter (`description`, `mode`, `model`, `steps`, `permissions`): `orchestrator` (`mode: primary`, sin `model` ni `steps`: hereda el modelo de la config) + `code`, `debug`, `research`, `review`, `architect` (todos `mode: subagent` con `steps` 60 para `code`/`debug` y 30 para los otros tres; `research`/`review`/`architect` deniegan `edit` y `shell` salvo allowlist de solo lectura — `git status/diff/log/branch`, `ls` — para que no puedan escribir por la vía `shell`).
+- `agents/` — 7 ficheros `.md` con frontmatter (`description`, `mode`, `model`, `steps`, `permissions`): `orchestrator` (`mode: primary`, sin `model` ni `steps`: hereda el modelo de la config) + `code`, `debug`, `research`, `review`, `architect`, `latex` (todos `mode: subagent`; `steps` 60 para `code`/`debug`/`latex` y 30 para los otros tres; `research`/`review`/`architect` deniegan `edit` y `shell` salvo allowlist de solo lectura — `git status/diff/log/branch`, `ls` — para que no puedan escribir por la vía `shell`; `latex` puede editar `.tex` y auxiliares).
 - `proyecto/.opencode/` — variante que se copia tal cual a la raíz de un repo de equipo: `opencode.json` + copia de los agentes.
 - `opencode-global.example.json` — plantilla para instalación en config global.
 - `install.sh` — instalación en `~/.config/opencode/`.
