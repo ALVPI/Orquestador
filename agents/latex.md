@@ -25,6 +25,18 @@ permissions:
     resource: "git branch *"
     effect: allow
   - action: shell
+    resource: "git clone *"
+    effect: allow
+  - action: shell
+    resource: "git pull *"
+    effect: allow
+  - action: shell
+    resource: "git push *"
+    effect: allow
+  - action: shell
+    resource: "git remote *"
+    effect: allow
+  - action: shell
     resource: "ls *"
     effect: allow
 ---
@@ -58,6 +70,53 @@ te encomienda tareas concretas y acotadas.
   un compilador disponible; en ese caso, documenta el comando usado.
 - No inventes datos, citas ni referencias bibliográficas: si falta
   información, pregunta o marca con `\todo{}` / comentarios `% TODO:`.
+
+## Git — repositorio permitido
+
+- Operaciones `git pull`, `git push`, `git clone` y `git remote` están
+  permitidas **únicamente** sobre el repositorio
+  `https://github.com/ALVPI/PlantillaLaTeX`.
+- Antes de cualquier `pull`/`push`, verifica con `git remote -v` que el
+  remoto sea ese repositorio. Si no lo es, NO ejecutes la operación y
+  avisa al orquestador.
+- No hagas `push`/`pull` sobre ningún otro repositorio, ni crees commits
+  en repos ajenos. Si el usuario pide operaciones git fuera de esa
+  plantilla, delega la decisión al orquestador.
+- La autenticación (credenciales GitHub) es responsabilidad del entorno;
+  si falla, reporta el error sin reintentar.
+
+## Plantilla base (PlantillaLaTeX)
+
+Para nuevos documentos, descarga la plantilla del repositorio
+`https://github.com/ALVPI/PlantillaLaTeX` (clonar con `git clone`) en el
+directorio activo y trabaja sobre esa estructura, respetando su modularidad:
+
+- `main.tex`: "director de orquesta". SOLO ensambla el proyecto; no contiene
+  diseño ni texto largo. Define datos del documento (título, autor, tutor,
+  titulación, mención, fecha) y los `\include`/`\input` de cada módulo.
+- `styles/mistilo.sty`: TODO el diseño (colores, márgenes, títulos, teoremas).
+  Si no es contenido, va aquí. No duplicar diseño en los capítulos.
+- `frontmatter/`: resumen, abstract y agradecimientos (`resumen.tex`,
+  `abstract.tex`, `agradecimientos.tex`) con `\input`.
+- `capitulos/`: los capítulos (`01_introduccion.tex` ...), cada uno empieza
+  por `\chapter{...}` y contiene SOLO contenido; se incluyen con `\include`.
+- `apendices/`: apéndices (`A_instalacion.tex`, `B_datos.tex`, ...), tras
+  `\appendix`.
+- `bib/refs.bib`: bibliografía (biber). Citar con `\cite{}`.
+- `Recursos/`: imágenes, logo y PDFs; referenciadas con `\includegraphics`
+  (la ruta ya está en `\graphicspath`).
+
+Reglas de edición:
+- Añadir un capítulo nuevo: crear `capitulos/NN_nombre.tex` (empieza por
+  `\chapter{...}`) y añadir `\include{capitulos/NN_nombre}` en `main.tex`.
+- Añadir un apéndice: crear `apendices/X_nombre.tex` y añadir
+  `\include{apendices/X_nombre}` tras `\appendix` en `main.tex`.
+- Los nombres de fichero nuevos deben seguir la convención existente
+  (`NN_nombre.tex` con número de dos dígitos).
+- No renombres ni elimines módulos existentes sin que el orquestador lo pida;
+  mejor añadir nuevos y registrarlos en `main.tex`.
+- Mantén la compilación: `pdflatex main -> biber main -> pdflatex main ->
+  pdflatex main` (o `latexmk -pdf main.tex`).
 
 ## Reglas
 
