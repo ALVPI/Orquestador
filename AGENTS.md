@@ -9,7 +9,7 @@ No es una aplicación: es un **bundle de configuración** para OpenCode V2 (orqu
 - `agents/` — 7 ficheros `.md` con frontmatter (`description`, `mode`, `model`, `steps`, `permissions`): `orchestrator` (`mode: primary`, sin `model` ni `steps`: hereda el modelo de la config) + `code`, `debug`, `research`, `review`, `architect`, `latex` (todos `mode: subagent`; `steps` 60 para `code`/`debug`/`latex` y 30 para los otros tres; `research`/`review`/`architect` deniegan `edit` y `shell` salvo allowlist de solo lectura — `git status/diff/log/branch`, `ls` — para que no puedan escribir por la vía `shell`; `latex` puede editar `.tex` y auxiliares).
 - `proyecto/.opencode/` — variante que se copia tal cual a la raíz de un repo de equipo: `opencode.json` + copia de los agentes.
 - `opencode-global.example.json` — plantilla para instalación en config global.
-- `install.sh` — instalación en `~/.config/opencode/`.
+- `install.sh` / `install.ps1` — instalación en `~/.config/opencode/` (Linux/macOS y Windows).
 
 ## Sincronización obligatoria (lo más fácil de olvidar)
 

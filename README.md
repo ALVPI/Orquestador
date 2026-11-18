@@ -7,7 +7,8 @@ basado en la configuración global (V2) de OpenCode.
 
 ```text
 .
-├── install.sh                        ← instalación en tu config global (~/.config/opencode/)
+├── install.sh                        ← instalación en tu config global (~/.config/opencode/) (Linux/macOS)
+├── install.ps1                       ← instalación en tu config global (Windows)
 ├── opencode-global.example.json      ← plantilla de opencode.json (referencia / instalación limpia)
 ├── agents/                           ← orquestador + 5 subagentes compartidos por ambos usos
 ├── AGENTS.md                         ← guía de trabajo para las sesiones de OpenCode en este repo
@@ -53,6 +54,8 @@ automáticamente. No toca la configuración personal de nadie.
 
 ## Opción B — Config global personal (para cualquier directorio)
 
+### Linux / macOS
+
 ```sh
 git clone <este-repo> opencode-multiagente
 cd opencode-multiagente && ./install.sh
@@ -67,6 +70,42 @@ El instalador:
    las que falten (deduplicadas): OpenCode aplica la última regla que
    coincide, así que las tuyas siguen ganando y el paquete no pierde su
    postura `ask`. Nunca borra ni debilita nada de lo que ya tengas.
+
+### Windows
+
+Instalación automática con PowerShell (compatible con Windows PowerShell 5.1
+y PowerShell 7+):
+
+```powershell
+git clone <este-repo> opencode-multiagente
+cd opencode-multiagente
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\install.ps1
+```
+
+> Si la ejecución de scripts está bloqueada, el `Set-ExecutionPolicy -Scope Process`
+> anterior la habilita solo para esa sesión (no cambia la configuración del sistema).
+
+Instalación manual (PowerShell):
+
+```powershell
+$src = (Resolve-Path .).Path
+$config = if ($env:OPENCODE_CONFIG_DIR) { $env:OPENCODE_CONFIG_DIR } elseif (Test-Path "$env:APPDATA\opencode") { "$env:APPDATA\opencode" } else { "$env:USERPROFILE\.config\opencode" }
+New-Item -ItemType Directory -Force -Path "$config\agents" | Out-Null
+Copy-Item "$src\agents\*.md" "$config\agents\" -Force
+if (-not (Test-Path "$config\opencode.json")) {
+    Copy-Item "$src\opencode-global.example.json" "$config\opencode.json"
+}
+```
+
+> Nota sobre la ruta de configuración en Windows: por defecto se usa
+> `$env:APPDATA\opencode` si existe, y si no `$env:USERPROFILE\.config\opencode`
+> (espejo de Unix). Puedes forzar una ruta con la variable de entorno
+> `OPENCODE_CONFIG_DIR` o pasando `-ConfigDir` a `install.ps1`:
+>
+> ```powershell
+> .\install.ps1 -ConfigDir "C:\ruta\a\config\opencode"
+> ```
 
 ## Requisitos para quien lo usa
 
