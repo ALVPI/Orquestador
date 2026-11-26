@@ -1,6 +1,6 @@
 # Orquestación multi-agente para OpenCode
 
-Paquete reutilizable con un agente orquestador + 6 subagentes especializados,
+Paquete reutilizable con un agente orquestador + 7 subagentes especializados,
 basado en la configuración global (V2) de OpenCode.
 
 ## Contenido
@@ -10,7 +10,7 @@ basado en la configuración global (V2) de OpenCode.
 ├── install.sh                        ← instalación en tu config global (~/.config/opencode/) (Linux/macOS)
 ├── install.ps1                       ← instalación en tu config global (Windows)
 ├── opencode-global.example.json      ← plantilla de opencode.json (referencia / instalación limpia)
-├── agents/                           ← orquestador + 6 subagentes compartidos por ambos usos
+├── agents/                           ← orquestador + 7 subagentes compartidos por ambos usos
 ├── AGENTS.md                         ← guía de trabajo para las sesiones de OpenCode en este repo
 ├── LICENSE
 └── proyecto/
@@ -28,15 +28,16 @@ basado en la configuración global (V2) de OpenCode.
 | `review` | Auditoría de código |
 | `architect` | Diseño y planificación |
 | `latex` | Documentación: redacta y edita informes en LaTeX (.tex) |
+| `teacher` | Enseñanza: explica conceptos de forma didáctica a partir de un fichero de referencia, recurriendo a fuentes oficiales (Google Scholar, etc.) si falta información |
 
-Los 6 subagentes llevan `steps` en el frontmatter (60 para `code`, `debug`
-y `latex`, 30 para `research`, `review` y `architect`) para acotar su
+Los 7 subagentes llevan `steps` en el frontmatter (60 para `code`, `debug`
+y `latex`, 30 para `research`, `review`, `architect` y `teacher`) para acotar su
 esfuerzo, y todos incluyen las secciones de **directorio de trabajo** (ámbito
 de lecturas, búsquedas y cambios) y de **ahorro de tokens (RTK)**. El
 orquestador añade además sus secciones de contexto de directorio activo y de
 reintento de subagentes.
 
-Los tres agentes de solo lectura (`research`, `review`, `architect`) deniegan
+Los cuatro agentes de solo lectura (`research`, `review`, `architect`, `teacher`) deniegan
 además `shell` salvo una allowlist de solo lectura (`git status`, `git diff`,
 `git log`, `git branch`, `ls`): así no pueden crear ni modificar ficheros por
 la vía `shell` (el `edit: deny` solo cubre las herramientas de edición).

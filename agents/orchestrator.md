@@ -114,6 +114,15 @@ Utiliza el agente `latex` cuando la tarea consista en:
 
 Este agente puede modificar archivos .tex y auxiliares.
 
+### TEACHER
+Utiliza el agente `teacher` cuando la tarea consista en:
+- Explicar conceptos de forma didáctica y pedagógica.
+- Enseñar una materia o documentación a partir de un fichero de referencia.
+- Responder preguntas sobre un tema empleando técnicas pedagógicas.
+- Buscar en fuentes oficiales (p. ej. Google Scholar) cuando el fichero de referencia no baste.
+
+Este agente debe trabajar en modo de solo lectura: no debe modificar archivos.
+
 ## 2. COMPLEXITY CLASSIFIER
 
 Asigna un nivel de complejidad:
@@ -150,6 +159,7 @@ matriz de modelos de tier gratuito del proveedor:
 | code / debug (código) | `opencode/minimax-m3.1-flash-free` |
 | architect (decisión técnica) | `opencode/inkling-2-small-free` |
 | research (búsqueda y análisis externo) | `opencode/beam-free` |
+| teacher (explicación didáctica / pedagogía) | `opencode/seaglass-alpha-free` |
 | review (auditoría) | `opencode/flint-40b-free` |
 | Documentación / informes LaTeX | `opencode/longcat-2.5-free` |
 | Tarea mecánica o por lotes (LOW, llamadas simples repetidas) | `opencode/mimo-v2.6-flash-free` |
@@ -230,6 +240,7 @@ Candidatos por fila (orden de preferencia; el primero disponible gana):
 | code / debug (código) | `opencode/minimax-m3.1-flash-free`, `opencode/mimo-v2.6-flash-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
 | architect (decisión técnica) | `opencode/inkling-2-small-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
 | research (búsqueda y análisis externo) | `opencode/beam-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
+| teacher (explicación didáctica) | `opencode/seaglass-alpha-free`, `opencode/beam-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
 | review (auditoría) | `opencode/flint-40b-free`, `opencode/iceman-free`, `opencode/longcat-2.5-free`, `opencode/big-pickle` |
 | Documentación / informes LaTeX | `opencode/longcat-2.5-free`, `opencode/iceman-free`, `opencode/big-pickle` |
 | Tarea mecánica o por lotes | `opencode/mimo-v2.6-flash-free`, `opencode/minimax-m3.1-flash-free`, `opencode/iceman-free`, `opencode/big-pickle` |
@@ -369,7 +380,7 @@ Cuando la tarea requiera clasificación, utiliza este formato:
 
 TASK CLASSIFICATION
 
-- Category: [CODE / DEBUG / RESEARCH / REVIEW / ARCHITECT]
+- Category: [CODE / DEBUG / RESEARCH / REVIEW / ARCHITECT / TEACHER]
 - Complexity: [LOW / MEDIUM / HIGH]
 - Selected agent: [nombre del agente o NONE]
 - Reason: [justificación breve]
@@ -439,7 +450,7 @@ Permite ejecutar subtareas independientes en paralelo bajo una única aprobació
 ### 10.1 Cuándo aplica
 - Solo si hay ≥2 subtareas con ventaja clara, `paths_write` declarados disjuntos entre sí y sin dependencia de artefactos intra-bloque. Solapamiento de solo lectura es válido.
 - Si hay duda sobre independencia, solapamiento o alcance, NO formar bloque: ejecutar en secuencial.
-- Agentes escribibles en paralelo (paths disjuntos): `code`, `debug`, `latex`. Solo lectura: `research`, `review`, `architect`.
+- Agentes escribibles en paralelo (paths disjuntos): `code`, `debug`, `latex`. Solo lectura: `research`, `review`, `architect`, `teacher`.
 
 ### 10.2 Formato de aprobación única (obligatorio)
 Presentar en PHASE 4 un `PARALLEL BLOCK APPROVAL` con: `block_id`, motivo, `base_ref/cwd`, tope `K`, nº de oleadas, tabla de tareas (`task_id`, agente, modelo, objetivo, `paths_write`, `worktree_name`, ola), política de tokens/modelos, riesgos y cobertura exacta de la aprobación. Cubierta: creación de worktrees, invocaciones subagent del bloque y 1 reintento transitorio/fallback por tarea. No cubierta: fusión/operaciones git fuera de allowlist, accesos externos no previstos ni tareas nuevas. Silencio = no autorización.
